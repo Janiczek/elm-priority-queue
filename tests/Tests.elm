@@ -239,6 +239,16 @@ minPriorityQueueSuite =
                 MinPriorityQueue.any (always False) queue
                     |> Expect.equal False
                     |> Expect.onFail "Expected any (always False) to be False for non-empty queue"
+        , Test.test "any is stack safe when all elements have a different priority" <|
+            \() ->
+                MinPriorityQueue.fromList identity (List.range 0 10000)
+                    |> MinPriorityQueue.any (always False)
+                    |> Expect.equal False
+        , Test.test "any is stack safe even when all elements have the same priority" <|
+            \() ->
+                MinPriorityQueue.fromList (always 0) (List.range 0 10000)
+                    |> MinPriorityQueue.any (always False)
+                    |> Expect.equal False
         , Test.fuzz minPriorityQueueFuzzer "isEmpty xs <=> length xs == 0" <|
             \queue ->
                 let
@@ -366,6 +376,16 @@ maxPriorityQueueSuite =
                     |> MaxPriorityQueue.all (\x -> x < 10)
                     |> Expect.equal True
                     |> Expect.onFail "Expected all remaining items to be smaller than 10"
+        , Test.test "all is stack safe when all elements have a different priority" <|
+            \() ->
+                MinPriorityQueue.fromList identity (List.range 0 10000)
+                    |> MinPriorityQueue.all (always True)
+                    |> Expect.equal True
+        , Test.test "all is stack safe even when all elements have the same priority" <|
+            \() ->
+                MinPriorityQueue.fromList (always 0) (List.range 0 10000)
+                    |> MinPriorityQueue.all (always True)
+                    |> Expect.equal True
         , Test.test "largest empty == Nothing" <|
             \_ ->
                 MaxPriorityQueue.empty

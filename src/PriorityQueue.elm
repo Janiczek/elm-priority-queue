@@ -215,22 +215,40 @@ drop n q =
 
 all : (a -> Bool) -> PriorityQueue a -> Bool
 all pred q =
-    case q of
-        Empty ->
-            True
+    let
+        go : PriorityQueue a -> Bool
+        go queue =
+            case queue of
+                Empty ->
+                    True
 
-        Node _ _ ( element, _ ) a b ->
-            pred element && all pred a && all pred b
+                Node _ _ ( element, _ ) a b ->
+                    if pred element then
+                        go (merge a b)
+
+                    else
+                        False
+    in
+    go q
 
 
 any : (a -> Bool) -> PriorityQueue a -> Bool
 any pred q =
-    case q of
-        Empty ->
-            False
+    let
+        go : PriorityQueue a -> Bool
+        go queue =
+            case queue of
+                Empty ->
+                    False
 
-        Node _ _ ( element, _ ) a b ->
-            pred element || any pred a || any pred b
+                Node _ _ ( element, _ ) a b ->
+                    if pred element then
+                        True
+
+                    else
+                        go (merge a b)
+    in
+    go q
 
 
 length : PriorityQueue a -> Int
