@@ -138,7 +138,7 @@ fold f acc (MaxQ pq) =
     PriorityQueue.fold f acc pq
 
 
-{-| Insert an element into a MaxPriorityQueue.
+{-| Insert an element into a MaxPriorityQueue. O(log n).
 
     empty
         |> insert identity 3
@@ -153,7 +153,7 @@ insert toPriority element (MaxQ pq) =
     MaxQ (PriorityQueue.insert (toPriority >> negate) element pq)
 
 
-{-| Insert an element into a MaxPriorityQueue.
+{-| Insert an element into a MaxPriorityQueue. O(log n).
 
 This is an alias for `insert`.
 
@@ -185,7 +185,7 @@ isEmpty (MaxQ pq) =
 
 
 {-| Remove and return the element with the highest priority from the MaxPriorityQueue,
-along with the updated queue. Returns Nothing if the queue is empty.
+along with the updated queue. Returns Nothing if the queue is empty. O(log n).
 
     dequeue (fromList identity [ 3, 4, 1 ])
         --> Just ( 4, fromList identity [ 3, 1 ] )
@@ -236,7 +236,7 @@ filter predicate (MaxQ pq) =
     MaxQ <| PriorityQueue.filter predicate pq
 
 
-{-| Retrieve the N items with highest priority.
+{-| Retrieve the N items with highest priority. O(log n).
 
 The order of items in the resulting list is lowest-priority-first, thus may seem
 reversed from what you want. See note at the top.
@@ -257,7 +257,7 @@ take n (MaxQ pq) =
     PriorityQueue.take n pq
 
 
-{-| Drop the N items with highest priority from the queue.
+{-| Drop the N items with highest priority from the queue. O(log n).
 
     fromList identity [ 3, 1, 5, 2, 4 ]
         |> drop 3
@@ -276,7 +276,7 @@ drop n (MaxQ pq) =
 
 
 {-| Get the item with the highest priority without removing it from the queue.
-Returns Nothing if the queue is empty.
+Returns Nothing if the queue is empty. O(1).
 
     head (fromList identity [ 3, 4, 1 ])
         --> Just 4
@@ -291,7 +291,7 @@ head (MaxQ pq) =
 
 
 {-| Get a new queue with the highest priority item removed.
-Returns Nothing if the queue is empty.
+Returns Nothing if the queue is empty. O(log n).
 
     tail (fromList identity [ 3, 4, 1 ])
         |> Maybe.map toSortedList
@@ -308,7 +308,7 @@ tail (MaxQ pq) =
 
 
 {-| Get the item with the highest priority without removing it from the queue.
-Returns Nothing if the queue is empty.
+Returns Nothing if the queue is empty. O(1).
 
 This is an alias for `head`.
 
@@ -380,7 +380,7 @@ any predicate (MaxQ pq) =
     PriorityQueue.any predicate pq
 
 
-{-| Get the number of elements in the queue.
+{-| Get the number of elements in the queue. O(1).
 
     length (fromList identity [ 1, 2, 3 ])
         --> 3

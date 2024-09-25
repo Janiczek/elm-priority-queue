@@ -1,6 +1,10 @@
 # `Janiczek/elm-priority-queue`
 
-Priority queue is a collection that gives an easy access to its smallest (or largest) element.
+**Priority queue is a collection that gives an easy access to its smallest (or largest) item.**
+
+Priority queues are good at accessing the smallest/largest item (O(1) for `head`, `smallest` and `largest`), while they're slower at inserting and deleting items (O(log n) for `insert` and `dequeue`).
+
+Contrast this to linked lists (Elm's `List`) which are fast at inserting and deleting items (O(1) for `cons` and `tail`) but slow at finding the smallest/largest item (O(n) for `minimum` and `maximum`).
 
 ---
 
@@ -9,7 +13,6 @@ This package is a fork of [`fifth-postulate/priority-queue`](https://package.elm
 * makes it easier (by naming the types explicitly) to know which "direction" the queue goes (items with smaller priority Ints first, or the other way round)
 * contains a more complete API (eg. `singleton`, `filter`, `length`, `any`, etc.) 
 * doesn't hold a function inside the data structure (thus is usable in the Elm debugger etc.)
-
 
 ```elm
 import MaxPriorityQueue exposing (MaxPriorityQueue)
@@ -70,3 +73,7 @@ youngest =
     MinPriorityQueue.smallest peopleByAge
     --> Just { name = "Xavier", age = 13 }
 ```
+
+---
+
+`MinPriorityQueue` and `MaxPriorityQueue` are implemented using [leftist heaps](https://en.wikipedia.org/wiki/Leftist_tree) (see [Purely Functional Data Structures by Okasaki](https://www.cs.cmu.edu/~rwh/theses/okasaki.pdf), chapter 3.1).
