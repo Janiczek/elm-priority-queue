@@ -3,7 +3,7 @@
     "name": "Janiczek/elm-priority-queue",
     "summary": "A (min, max) priority queue",
     "license": "MIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exposed-modules": [
         "MinPriorityQueue",
         "MaxPriorityQueue"
