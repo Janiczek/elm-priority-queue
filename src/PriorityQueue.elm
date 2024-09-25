@@ -199,7 +199,11 @@ all pred q =
             True
 
         Node _ ( element, _ ) a b ->
-            pred element && all pred a && all pred b
+            if pred element && all pred a then
+                all pred b
+
+            else
+                False
 
 
 any : (a -> Bool) -> PriorityQueue a -> Bool
@@ -209,7 +213,11 @@ any pred q =
             False
 
         Node _ ( element, _ ) a b ->
-            pred element || any pred a || any pred b
+            if pred element || any pred a then
+                True
+
+            else
+                any pred b
 
 
 length : PriorityQueue a -> Int
