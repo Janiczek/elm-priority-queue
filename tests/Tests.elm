@@ -266,6 +266,47 @@ minPriorityQueueSuite =
                 MinPriorityQueue.toList enqueueResult
                     |> Expect.equal (MinPriorityQueue.toList insertResult)
                     |> Expect.onFail "Expected enqueue to be equivalent to insert"
+        , Test.fuzz2 minPriorityQueueFuzzer (Fuzz.intRange 0 10) "dequeueMany == take, drop" <|
+            \queue n ->
+                let
+                    dequeueManyResult : ( List Int, MinPriorityQueue Int )
+                    dequeueManyResult =
+                        MinPriorityQueue.dequeueMany n queue
+
+                    takeResult : List Int
+                    takeResult =
+                        MinPriorityQueue.take n queue
+
+                    dropResult : MinPriorityQueue Int
+                    dropResult =
+                        MinPriorityQueue.drop n queue
+                in
+                Expect.all
+                    [ \_ ->
+                        Tuple.first dequeueManyResult
+                            |> Expect.equal takeResult
+                            |> Expect.onFail "Expected dequeueMany's first tuple element to equal take result"
+                    , \_ ->
+                        Tuple.second dequeueManyResult
+                            |> MinPriorityQueue.toList
+                            |> Expect.equal (MinPriorityQueue.toList dropResult)
+                            |> Expect.onFail "Expected dequeueMany's second tuple element to equal drop result"
+                    ]
+                    ()
+        , Test.fuzz (Fuzz.intRange 0 100) "drop n empty == empty" <|
+            \n ->
+                let
+                    emptyQueue : MinPriorityQueue Int
+                    emptyQueue =
+                        MinPriorityQueue.empty
+
+                    droppedQueue : MinPriorityQueue Int
+                    droppedQueue =
+                        MinPriorityQueue.drop n emptyQueue
+                in
+                MinPriorityQueue.isEmpty droppedQueue
+                    |> Expect.equal True
+                    |> Expect.onFail ("Expected dropping " ++ String.fromInt n ++ " elements from an empty queue to result in an empty queue")
         ]
 
 
@@ -508,4 +549,45 @@ maxPriorityQueueSuite =
                 MaxPriorityQueue.toList enqueueResult
                     |> Expect.equal (MaxPriorityQueue.toList insertResult)
                     |> Expect.onFail "Expected enqueue to be equivalent to insert"
+        , Test.fuzz2 maxPriorityQueueFuzzer (Fuzz.intRange 0 10) "dequeueMany == take, drop" <|
+            \queue n ->
+                let
+                    dequeueManyResult : ( List Int, MaxPriorityQueue Int )
+                    dequeueManyResult =
+                        MaxPriorityQueue.dequeueMany n queue
+
+                    takeResult : List Int
+                    takeResult =
+                        MaxPriorityQueue.take n queue
+
+                    dropResult : MaxPriorityQueue Int
+                    dropResult =
+                        MaxPriorityQueue.drop n queue
+                in
+                Expect.all
+                    [ \_ ->
+                        Tuple.first dequeueManyResult
+                            |> Expect.equal takeResult
+                            |> Expect.onFail "Expected dequeueMany's first tuple element to equal take result"
+                    , \_ ->
+                        Tuple.second dequeueManyResult
+                            |> MaxPriorityQueue.toList
+                            |> Expect.equal (MaxPriorityQueue.toList dropResult)
+                            |> Expect.onFail "Expected dequeueMany's second tuple element to equal drop result"
+                    ]
+                    ()
+        , Test.fuzz (Fuzz.intRange 0 100) "drop n empty == empty" <|
+            \n ->
+                let
+                    emptyQueue : MaxPriorityQueue Int
+                    emptyQueue =
+                        MaxPriorityQueue.empty
+
+                    droppedQueue : MaxPriorityQueue Int
+                    droppedQueue =
+                        MaxPriorityQueue.drop n emptyQueue
+                in
+                MaxPriorityQueue.isEmpty droppedQueue
+                    |> Expect.equal True
+                    |> Expect.onFail ("Expected dropping " ++ String.fromInt n ++ " elements from an empty queue to result in an empty queue")
         ]
