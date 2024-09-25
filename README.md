@@ -8,7 +8,7 @@ This package is a fork of [`fifth-postulate/priority-queue`](https://package.elm
 
 * makes it easier (by naming the types explicitly) to know which "direction" the queue goes (items with smaller priority Ints first, or the other way round)
 * contains a more complete API (eg. `singleton`, `filter`, `length`, `any`, etc.) 
-* doesn't hold a function inside the data structure (thus is usable in the Elm debugger, Lamdera etc.)
+* doesn't hold a function inside the data structure (thus is usable in the Elm debugger etc.)
 
 
 ```elm
