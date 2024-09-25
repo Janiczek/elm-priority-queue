@@ -1,7 +1,7 @@
 module MinPriorityQueue exposing
     ( MinPriorityQueue
     , empty, singleton, fromList
-    , toList, toSortedList
+    , toList, toSortedList, fold
     , insert, enqueue, filter, dequeue, dequeueMany, smallest, head, tail, take, drop
     , all, any, isEmpty, length
     )
@@ -27,7 +27,7 @@ needed and make the cost more apparent.
 Anyways, let's continue with the rest of the docs!
 
 @docs empty, singleton, fromList
-@docs toList, toSortedList
+@docs toList, toSortedList, fold
 @docs insert, enqueue, filter, dequeue, dequeueMany, smallest, head, tail, take, drop
 @docs all, any, isEmpty, length
 
@@ -111,6 +111,26 @@ reversed from what you want. See note at the top.
 toSortedList : MinPriorityQueue a -> List a
 toSortedList (MinQ pq) =
     PriorityQueue.toSortedList pq
+
+
+{-| Fold over the elements in the MinPriorityQueue, highest priority first.
+
+    fromList identity [ 3, 1, 4 ]
+        |> fold (\x acc -> x :: acc) []
+        --> [ 4, 3, 1 ]
+
+    fromList identity [ 3, 1, 4 ]
+        |> fold (+) 0
+        --> 8
+
+    fromList Tuple.first [ (10, "World"), (1, "Hello"), (5, "Elm") ]
+        |> fold (\(_, word) acc -> acc ++ " " ++ word) ""
+        --> " Hello Elm World"
+
+-}
+fold : (a -> b -> b) -> b -> MinPriorityQueue a -> b
+fold f acc (MinQ pq) =
+    PriorityQueue.fold f acc pq
 
 
 {-| Insert an element into a MinPriorityQueue.

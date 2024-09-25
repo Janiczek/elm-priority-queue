@@ -307,6 +307,38 @@ minPriorityQueueSuite =
                 MinPriorityQueue.isEmpty droppedQueue
                     |> Expect.equal True
                     |> Expect.onFail ("Expected dropping " ++ String.fromInt n ++ " elements from an empty queue to result in an empty queue")
+        , Test.test "fold example" <|
+            \() ->
+                [ ( 10, "World" ), ( 1, "Hello" ), ( 5, "Elm" ) ]
+                    |> MinPriorityQueue.fromList Tuple.first
+                    |> MinPriorityQueue.fold (\( _, word ) acc -> acc ++ " " ++ word) ""
+                    |> Expect.equal " Hello Elm World"
+        , Test.fuzz minPriorityQueueFuzzer "toSortedList == fold (::)" <|
+            \queue ->
+                let
+                    toSortedListResult : List Int
+                    toSortedListResult =
+                        MinPriorityQueue.toSortedList queue
+
+                    foldResult : List Int
+                    foldResult =
+                        MinPriorityQueue.fold (::) [] queue
+                in
+                Expect.equal toSortedListResult foldResult
+                    |> Expect.onFail "Expected toSortedList to be equivalent to fold (::) []"
+        , Test.fuzz minPriorityQueueFuzzer "length == fold (always ((+) 1)) 0" <|
+            \queue ->
+                let
+                    lengthResult : Int
+                    lengthResult =
+                        MinPriorityQueue.length queue
+
+                    foldResult : Int
+                    foldResult =
+                        MinPriorityQueue.fold (always ((+) 1)) 0 queue
+                in
+                Expect.equal lengthResult foldResult
+                    |> Expect.onFail "Expected length to be equivalent to fold (always ((+) 1)) 0"
         ]
 
 
@@ -590,4 +622,36 @@ maxPriorityQueueSuite =
                 MaxPriorityQueue.isEmpty droppedQueue
                     |> Expect.equal True
                     |> Expect.onFail ("Expected dropping " ++ String.fromInt n ++ " elements from an empty queue to result in an empty queue")
+        , Test.test "fold example" <|
+            \() ->
+                [ ( 10, "World" ), ( 1, "Hello" ), ( 5, "Elm" ) ]
+                    |> MaxPriorityQueue.fromList Tuple.first
+                    |> MaxPriorityQueue.fold (\( _, word ) acc -> acc ++ " " ++ word) ""
+                    |> Expect.equal " World Elm Hello"
+        , Test.fuzz maxPriorityQueueFuzzer "toSortedList == fold (::)" <|
+            \queue ->
+                let
+                    toSortedListResult : List Int
+                    toSortedListResult =
+                        MaxPriorityQueue.toSortedList queue
+
+                    foldResult : List Int
+                    foldResult =
+                        MaxPriorityQueue.fold (::) [] queue
+                in
+                Expect.equal toSortedListResult foldResult
+                    |> Expect.onFail "Expected toSortedList to be equivalent to fold (::) []"
+        , Test.fuzz maxPriorityQueueFuzzer "length == fold (always ((+) 1)) 0" <|
+            \queue ->
+                let
+                    lengthResult : Int
+                    lengthResult =
+                        MaxPriorityQueue.length queue
+
+                    foldResult : Int
+                    foldResult =
+                        MaxPriorityQueue.fold (always ((+) 1)) 0 queue
+                in
+                Expect.equal lengthResult foldResult
+                    |> Expect.onFail "Expected length to be equivalent to fold (always ((+) 1)) 0"
         ]

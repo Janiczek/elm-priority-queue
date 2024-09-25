@@ -1,7 +1,7 @@
 module PriorityQueue exposing
     ( PriorityQueue
     , empty, singleton, fromList
-    , toList, toSortedList
+    , toList, toSortedList, fold
     , insert, filter, dequeue, dequeueMany, head, tail, take, drop
     , all, any, isEmpty, length
     )
@@ -10,7 +10,7 @@ module PriorityQueue exposing
 
 @docs PriorityQueue
 @docs empty, singleton, fromList
-@docs toList, toSortedList
+@docs toList, toSortedList, fold
 @docs insert, filter, dequeue, dequeueMany, head, tail, take, drop
 @docs all, any, isEmpty, length
 
@@ -225,6 +225,16 @@ length q =
                     go (merge left right) (acc + 1)
     in
     go q 0
+
+
+fold : (a -> b -> b) -> b -> PriorityQueue a -> b
+fold f acc q =
+    case q of
+        Empty ->
+            acc
+
+        Node _ ( element, _ ) a b ->
+            fold f (f element acc) (merge a b)
 
 
 
