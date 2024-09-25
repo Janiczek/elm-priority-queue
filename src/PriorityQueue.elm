@@ -52,7 +52,7 @@ singleton toPriority x =
 fromList : (a -> Priority) -> List a -> PriorityQueue a
 fromList toPriority xs =
     xs
-        |> List.foldl (insert toPriority) empty
+        |> List.foldl (\x q -> insert toPriority x q) empty
 
 
 filter : (a -> Bool) -> PriorityQueue a -> PriorityQueue a
