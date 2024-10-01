@@ -36,7 +36,7 @@ The leftist property is that the _rank_ of any left child is at least as large a
 -}
 type PriorityQueue a
     = Empty
-    | Node Rank Length ( a, Priority ) (PriorityQueue a) (PriorityQueue a)
+    | Node Rank Length a Priority (PriorityQueue a) (PriorityQueue a)
 
 
 empty : PriorityQueue a
@@ -46,7 +46,7 @@ empty =
 
 singleton : (a -> Priority) -> a -> PriorityQueue a
 singleton toPriority x =
-    Node 1 1 ( x, toPriority x ) Empty Empty
+    Node 1 1 x (toPriority x) Empty Empty
 
 
 fromList : (a -> Priority) -> List a -> PriorityQueue a
@@ -61,7 +61,7 @@ filter pred q =
         Empty ->
             q
 
-        Node r _ ( element, p ) a b ->
+        Node r _ element p a b ->
             if pred element then
                 let
                     filteredA : PriorityQueue a
@@ -80,7 +80,7 @@ filter pred q =
                     lengthB =
                         length filteredB
                 in
-                Node r (1 + lengthA + lengthB) ( element, p ) filteredA filteredB
+                Node r (1 + lengthA + lengthB) element p filteredA filteredB
 
             else
                 merge (filter pred a) (filter pred b)
@@ -92,7 +92,7 @@ dequeue q =
         Empty ->
             Nothing
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             Just ( element, merge a b )
 
 
@@ -121,7 +121,7 @@ toList q =
         Empty ->
             []
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             element :: (toList a ++ toList b)
 
 
@@ -134,7 +134,7 @@ toSortedList q =
                 Empty ->
                     acc
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     go (merge a b) (element :: acc)
     in
     go q []
@@ -156,7 +156,7 @@ isEmpty q =
         Empty ->
             True
 
-        Node _ _ _ _ _ ->
+        Node _ _ _ _ _ _ ->
             False
 
 
@@ -166,7 +166,7 @@ head q =
         Empty ->
             Nothing
 
-        Node _ _ ( element, _ ) _ _ ->
+        Node _ _ element _ _ _ ->
             Just element
 
 
@@ -176,7 +176,7 @@ tail q =
         Empty ->
             Nothing
 
-        Node _ _ _ a b ->
+        Node _ _ _ _ a b ->
             Just <| merge a b
 
 
@@ -209,7 +209,7 @@ drop n q =
             Empty ->
                 q
 
-            Node _ _ _ a b ->
+            Node _ _ _ _ a b ->
                 drop (n - 1) (merge a b)
 
 
@@ -222,7 +222,7 @@ all pred q =
                 Empty ->
                     True
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     if pred element then
                         go (merge a b)
 
@@ -241,7 +241,7 @@ any pred q =
                 Empty ->
                     False
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     if pred element then
                         True
 
@@ -257,7 +257,7 @@ length q =
         Empty ->
             0
 
-        Node _ l _ _ _ ->
+        Node _ l _ _ _ _ ->
             l
 
 
@@ -267,7 +267,7 @@ fold f acc q =
         Empty ->
             acc
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             fold f (f element acc) (merge a b)
 
 
@@ -286,28 +286,28 @@ merge left right =
         ( _, Empty ) ->
             left
 
-        ( Node _ _ ( x, xp ) a b, Node _ _ ( y, yp ) u v ) ->
+        ( Node _ _ x xp a b, Node _ _ y yp u v ) ->
             if xp <= yp then
-                make ( x, xp ) a (merge b right)
+                make x xp a (merge b right)
 
             else
-                make ( y, yp ) u (merge left v)
+                make y yp u (merge left v)
 
 
 {-| Create a non empty tree from an element and two sub-trees, keeping the _leftist property_ intact.
 -}
-make : ( a, Priority ) -> PriorityQueue a -> PriorityQueue a -> PriorityQueue a
-make x a b =
+make : a -> Priority -> PriorityQueue a -> PriorityQueue a -> PriorityQueue a
+make x xp a b =
     let
         len : Int
         len =
             1 + length a + length b
     in
     if rank a >= rank b then
-        Node (1 + rank b) len x a b
+        Node (1 + rank b) len x xp a b
 
     else
-        Node (1 + rank a) len x b a
+        Node (1 + rank a) len x xp b a
 
 
 rank : PriorityQueue a -> Rank
@@ -316,5 +316,5 @@ rank q =
         Empty ->
             0
 
-        Node r _ _ _ _ ->
+        Node r _ _ _ _ _ ->
             r
