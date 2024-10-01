@@ -35,18 +35,18 @@ The leftist property is that the _rank_ of any left child is at least as large a
 
 -}
 type PriorityQueue a
-    = Empty
+    = Empty () () () () () ()
     | Node Rank Length a Priority (PriorityQueue a) (PriorityQueue a)
 
 
 empty : PriorityQueue a
 empty =
-    Empty
+    Empty () () () () () ()
 
 
 singleton : (a -> Priority) -> a -> PriorityQueue a
 singleton toPriority x =
-    Node 1 1 x (toPriority x) Empty Empty
+    Node 1 1 x (toPriority x) empty empty
 
 
 fromList : (a -> Priority) -> List a -> PriorityQueue a
@@ -58,7 +58,7 @@ fromList toPriority xs =
 filter : (a -> Bool) -> PriorityQueue a -> PriorityQueue a
 filter pred q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             q
 
         Node r _ element p a b ->
@@ -89,7 +89,7 @@ filter pred q =
 dequeue : PriorityQueue a -> Maybe ( a, PriorityQueue a )
 dequeue q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
         Node _ _ element _ a b ->
@@ -118,7 +118,7 @@ dequeueMany n q =
 toList : PriorityQueue a -> List a
 toList q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             []
 
         Node _ _ element _ a b ->
@@ -131,7 +131,7 @@ toSortedList q =
         go : PriorityQueue a -> List a -> List a
         go qq acc =
             case qq of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     acc
 
                 Node _ _ element _ a b ->
@@ -153,7 +153,7 @@ insert toPriority x q =
 isEmpty : PriorityQueue a -> Bool
 isEmpty q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             True
 
         Node _ _ _ _ _ _ ->
@@ -163,7 +163,7 @@ isEmpty q =
 head : PriorityQueue a -> Maybe a
 head q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
         Node _ _ element _ _ _ ->
@@ -173,7 +173,7 @@ head q =
 tail : PriorityQueue a -> Maybe (PriorityQueue a)
 tail q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
         Node _ _ _ _ a b ->
@@ -206,7 +206,7 @@ drop n q =
 
     else
         case q of
-            Empty ->
+            Empty _ _ _ _ _ _ ->
                 q
 
             Node _ _ _ _ a b ->
@@ -219,7 +219,7 @@ all pred q =
         go : PriorityQueue a -> Bool
         go queue =
             case queue of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     True
 
                 Node _ _ element _ a b ->
@@ -238,7 +238,7 @@ any pred q =
         go : PriorityQueue a -> Bool
         go queue =
             case queue of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     False
 
                 Node _ _ element _ a b ->
@@ -254,7 +254,7 @@ any pred q =
 length : PriorityQueue a -> Int
 length q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             0
 
         Node _ l _ _ _ _ ->
@@ -264,7 +264,7 @@ length q =
 fold : (a -> b -> b) -> b -> PriorityQueue a -> b
 fold f acc q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             acc
 
         Node _ _ element _ a b ->
@@ -280,10 +280,10 @@ fold f acc q =
 merge : PriorityQueue a -> PriorityQueue a -> PriorityQueue a
 merge left right =
     case ( left, right ) of
-        ( Empty, _ ) ->
+        ( Empty _ _ _ _ _ _, _ ) ->
             right
 
-        ( _, Empty ) ->
+        ( _, Empty _ _ _ _ _ _ ) ->
             left
 
         ( Node _ _ x xp a b, Node _ _ y yp u v ) ->
@@ -313,7 +313,7 @@ make x xp a b =
 rank : PriorityQueue a -> Rank
 rank q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             0
 
         Node r _ _ _ _ _ ->
