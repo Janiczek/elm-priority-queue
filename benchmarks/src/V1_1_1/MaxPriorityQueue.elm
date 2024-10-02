@@ -1,16 +1,16 @@
-module Vendor.MinPriorityQueue exposing
-    ( MinPriorityQueue
+module V1_1_1.MaxPriorityQueue exposing
+    ( MaxPriorityQueue
     , empty, singleton, fromList
     , toList, toSortedList, fold
-    , insert, enqueue, filter, dequeue, dequeueMany, smallest, head, tail, take, drop
+    , insert, enqueue, filter, dequeue, dequeueMany, largest, head, tail, take, drop
     , all, any, isEmpty, length
     )
 
 {-| The `(a -> Int)` function given to `singleton`, `insert`, `enqueue` and `fromList`
-is how you teach the queue to get the priority of an item. `MinPriorityQueue` will
-prioritize items with smaller Ints.
+is how you teach the queue to get the priority of an item. `MaxPriorityQueue` will
+prioritize items with larger Ints.
 
-@docs MinPriorityQueue
+@docs MaxPriorityQueue
 
 **Note:** Some functions in this module return lists of values in perhaps a slightly
 unexpected reversed order (`toSortedList`, `dequeueMany`, `take`). This is done
@@ -19,105 +19,110 @@ expected reverse order, so we let the user do the List.reverse themselves if
 needed and make the cost more apparent.
 
     toSortedList (fromList identity [ 100, 3, 1, 4, 1, 5, 9, 200 ])
-        --> [ 200, 100, 9, 5, 4, 3, 1, 1 ]
+        --> [ 1, 1, 3, 4, 5, 9, 100, 200 ]
 
     List.reverse (toSortedList (fromList identity [ 100, 3, 1, 4, 1, 5, 9, 200 ]))
-        --> [ 1, 1, 3, 4, 5, 9, 100, 200 ]
+        --> [ 200, 100, 9, 5, 4, 3, 1, 1 ]
 
 Anyways, let's continue with the rest of the docs!
 
 @docs empty, singleton, fromList
 @docs toList, toSortedList, fold
-@docs insert, enqueue, filter, dequeue, dequeueMany, smallest, head, tail, take, drop
+@docs insert, enqueue, filter, dequeue, dequeueMany, largest, head, tail, take, drop
 @docs all, any, isEmpty, length
 
 -}
 
-import Vendor.PriorityQueue as PriorityQueue exposing (PriorityQueue)
+import V1_1_1.PriorityQueue as PriorityQueue exposing (PriorityQueue)
 
 
-{-| A priority queue giving the highest priority to smallest Ints given by your
+
+-- The schtick of this module is to be exactly like MinPriorityQueue, just replace `toPriority` with `toPriority >> negate` everywhere.
+-- Also, the better name for `head` is `largest` here, not `smallest`.
+
+
+{-| A priority queue giving the highest priority to largest Ints given by your
 `(a -> Int)` function.
 
-    MinPriorityQueue.fromList .age
+    MaxPriorityQueue.fromList .age
         [ { name = "Martin", age = 31 }
         , { name = "Xavier", age = 13 }
         , { name = "Joanne", age = 54 }
         ]
-        |> MinPriorityQueue.smallest
-        --> { name = "Xavier", age = 13 }
+        |> MaxPriorityQueue.largest
+        --> { name = "Joanne", age = 54 }
 
-Note that MinPriorityQueue is not `(==)`-safe.
+Note that MaxPriorityQueue is not `(==)`-safe.
 
 -}
-type MinPriorityQueue a
-    = MinQ (PriorityQueue a)
+type MaxPriorityQueue a
+    = MaxQ (PriorityQueue a)
 
 
-{-| Create an empty MinPriorityQueue.
+{-| Create an empty MaxPriorityQueue.
 -}
-empty : MinPriorityQueue a
+empty : MaxPriorityQueue a
 empty =
-    MinQ PriorityQueue.empty
+    MaxQ PriorityQueue.empty
 
 
-{-| Create a MinPriorityQueue with a single element.
+{-| Create a MaxPriorityQueue with a single element.
 
     singleton identity 5
         |> toList
         --> [ 5 ]
 
 -}
-singleton : (a -> Int) -> a -> MinPriorityQueue a
+singleton : (a -> Int) -> a -> MaxPriorityQueue a
 singleton toPriority element =
-    MinQ <| PriorityQueue.singleton toPriority element
+    MaxQ <| PriorityQueue.singleton (toPriority >> negate) element
 
 
-{-| Create a MinPriorityQueue from a list of elements.
+{-| Create a MaxPriorityQueue from a list of elements.
 
     fromList identity [ 3, 1, 4, 1, 5, 9 ]
         |> toSortedList
         --> [ 1, 1, 3, 4, 5, 9 ]
 
 -}
-fromList : (a -> Int) -> List a -> MinPriorityQueue a
+fromList : (a -> Int) -> List a -> MaxPriorityQueue a
 fromList toPriority list =
-    MinQ <| PriorityQueue.fromList toPriority list
+    MaxQ <| PriorityQueue.fromList (toPriority >> negate) list
 
 
-{-| Convert a MinPriorityQueue to a list.
+{-| Convert a MaxPriorityQueue to a list.
 
 The order of items in the resulting list is unspecified.
 If you need a sorted list, use `toSortedList`.
 
     toList (fromList identity [ 100, 3, 1, 4, 1, 5, 9, 200 ])
-        --> [ 1, 1, 3, 100, 4, 5, 9, 200 ]
+        --> [ 200, 100, 4, 1, 1, 9, 5, 3]
 
 -}
-toList : MinPriorityQueue a -> List a
-toList (MinQ pq) =
+toList : MaxPriorityQueue a -> List a
+toList (MaxQ pq) =
     PriorityQueue.toList pq
 
 
-{-| Convert a MinPriorityQueue to a sorted list.
+{-| Convert a MaxPriorityQueue to a sorted list.
 
 The order of items in the resulting list is lowest-priority-first, thus may seem
 reversed from what you want. See note at the top.
 
     toSortedList (fromList identity [ 100, 3, 1, 4, 1, 5, 9, 200 ])
-        --> [ 200, 100, 9, 5, 4, 3, 1, 1 ]
+        --> [ 1, 1, 3, 4, 5, 9, 100, 200 ]
 
 -}
-toSortedList : MinPriorityQueue a -> List a
-toSortedList (MinQ pq) =
+toSortedList : MaxPriorityQueue a -> List a
+toSortedList (MaxQ pq) =
     PriorityQueue.toSortedList pq
 
 
-{-| Fold over the elements in the MinPriorityQueue, highest priority first.
+{-| Fold over the elements in the MaxPriorityQueue, highest priority first.
 
     fromList identity [ 3, 1, 4 ]
         |> fold (\x acc -> x :: acc) []
-        --> [ 4, 3, 1 ]
+        --> [ 1, 3, 4 ]
 
     fromList identity [ 3, 1, 4 ]
         |> fold (+) 0
@@ -125,47 +130,47 @@ toSortedList (MinQ pq) =
 
     fromList Tuple.first [ (10, "World"), (1, "Hello"), (5, "Elm") ]
         |> fold (\(_, word) acc -> acc ++ " " ++ word) ""
-        --> " Hello Elm World"
+        --> " World Elm Hello"
 
 -}
-fold : (a -> b -> b) -> b -> MinPriorityQueue a -> b
-fold f acc (MinQ pq) =
+fold : (a -> b -> b) -> b -> MaxPriorityQueue a -> b
+fold f acc (MaxQ pq) =
     PriorityQueue.fold f acc pq
 
 
-{-| Insert an element into a MinPriorityQueue. O(log n).
+{-| Insert an element into a MaxPriorityQueue. O(log n).
 
     empty
         |> insert identity 3
-        |> insert identity 1
         |> insert identity 4
-        |> smallest
-        --> Just 1
+        |> insert identity 1
+        |> largest
+        --> Just 4
 
 -}
-insert : (a -> Int) -> a -> MinPriorityQueue a -> MinPriorityQueue a
-insert toPriority element (MinQ pq) =
-    MinQ (PriorityQueue.insert toPriority element pq)
+insert : (a -> Int) -> a -> MaxPriorityQueue a -> MaxPriorityQueue a
+insert toPriority element (MaxQ pq) =
+    MaxQ (PriorityQueue.insert (toPriority >> negate) element pq)
 
 
-{-| Insert an element into a MinPriorityQueue. O(log n).
+{-| Insert an element into a MaxPriorityQueue. O(log n).
 
 This is an alias for `insert`.
 
     empty
         |> enqueue identity 3
-        |> enqueue identity 1
         |> enqueue identity 4
-        |> smallest
-        --> Just 1
+        |> enqueue identity 1
+        |> largest
+        --> Just 4
 
 -}
-enqueue : (a -> Int) -> a -> MinPriorityQueue a -> MinPriorityQueue a
+enqueue : (a -> Int) -> a -> MaxPriorityQueue a -> MaxPriorityQueue a
 enqueue toPriority element mpq =
     insert toPriority element mpq
 
 
-{-| Check if a MinPriorityQueue is empty.
+{-| Check if a MaxPriorityQueue is empty.
 
     isEmpty empty
         --> True
@@ -174,25 +179,25 @@ enqueue toPriority element mpq =
         --> False
 
 -}
-isEmpty : MinPriorityQueue a -> Bool
-isEmpty (MinQ pq) =
+isEmpty : MaxPriorityQueue a -> Bool
+isEmpty (MaxQ pq) =
     PriorityQueue.isEmpty pq
 
 
-{-| Remove and return the element with the highest priority from the MinPriorityQueue,
+{-| Remove and return the element with the highest priority from the MaxPriorityQueue,
 along with the updated queue. Returns Nothing if the queue is empty. O(log n).
 
-    dequeue (fromList identity [ 3, 1, 4 ])
-        --> Just ( 1, fromList identity [ 3, 4 ] )
+    dequeue (fromList identity [ 3, 4, 1 ])
+        --> Just ( 4, fromList identity [ 3, 1 ] )
 
     dequeue empty
         --> Nothing
 
 -}
-dequeue : MinPriorityQueue a -> Maybe ( a, MinPriorityQueue a )
-dequeue (MinQ pq) =
+dequeue : MaxPriorityQueue a -> Maybe ( a, MaxPriorityQueue a )
+dequeue (MaxQ pq) =
     PriorityQueue.dequeue pq
-        |> Maybe.map (Tuple.mapSecond MinQ)
+        |> Maybe.map (Tuple.mapSecond MaxQ)
 
 
 {-| Retrieve the N items with highest priority, alongside the queue without them.
@@ -202,20 +207,20 @@ reversed from what you want. See note at the top.
 
     fromList identity [ 3, 1, 5, 2, 4 ]
         |> dequeueMany 3
-        --> ( [ 3, 2, 1 ], fromList identity [ 5, 4 ] )
+        --> ( [ 3, 4, 5 ], fromList identity [ 1, 2 ] )
 
 If you take more items than are in the queue, you will get all the items in the
 queue.
 
     fromList identity [ 3, 1, 2 ]
         |> dequeueMany 5
-        --> ( [ 3, 2, 1 ], empty )
+        --> ( [ 1, 2, 3 ], empty )
 
 -}
-dequeueMany : Int -> MinPriorityQueue a -> ( List a, MinPriorityQueue a )
-dequeueMany n (MinQ pq) =
+dequeueMany : Int -> MaxPriorityQueue a -> ( List a, MaxPriorityQueue a )
+dequeueMany n (MaxQ pq) =
     PriorityQueue.dequeueMany n pq
-        |> Tuple.mapSecond MinQ
+        |> Tuple.mapSecond MaxQ
 
 
 {-| Keep only the elements that satisfy the predicate.
@@ -223,12 +228,12 @@ dequeueMany n (MinQ pq) =
     fromList identity [ 1, 2, 3, 4, 5 ]
         |> filter (\x -> modBy 2 x == 0)
         |> toSortedList
-        --> [ 4, 2 ]
+        --> [ 2, 4 ]
 
 -}
-filter : (a -> Bool) -> MinPriorityQueue a -> MinPriorityQueue a
-filter predicate (MinQ pq) =
-    MinQ <| PriorityQueue.filter predicate pq
+filter : (a -> Bool) -> MaxPriorityQueue a -> MaxPriorityQueue a
+filter predicate (MaxQ pq) =
+    MaxQ <| PriorityQueue.filter predicate pq
 
 
 {-| Retrieve the N items with highest priority. O(log n).
@@ -238,7 +243,7 @@ reversed from what you want. See note at the top.
 
     fromList identity [ 3, 1, 5, 2, 4 ]
         |> take 3
-        --> [ 3, 2, 1 ]
+        --> [ 3, 4, 5 ]
 
 If you take more items than are in the queue, you will get all the items in the
 queue.
@@ -247,8 +252,8 @@ queue.
         --> [ 1 ]
 
 -}
-take : Int -> MinPriorityQueue a -> List a
-take n (MinQ pq) =
+take : Int -> MaxPriorityQueue a -> List a
+take n (MaxQ pq) =
     PriorityQueue.take n pq
 
 
@@ -257,7 +262,7 @@ take n (MinQ pq) =
     fromList identity [ 3, 1, 5, 2, 4 ]
         |> drop 3
         |> toSortedList
-        --> [ 5, 4 ]
+        --> [ 1, 2 ]
 
 If you drop more items than are in the queue, you will get an empty queue.
 
@@ -265,41 +270,41 @@ If you drop more items than are in the queue, you will get an empty queue.
         --> empty
 
 -}
-drop : Int -> MinPriorityQueue a -> MinPriorityQueue a
-drop n (MinQ pq) =
-    MinQ <| PriorityQueue.drop n pq
+drop : Int -> MaxPriorityQueue a -> MaxPriorityQueue a
+drop n (MaxQ pq) =
+    MaxQ <| PriorityQueue.drop n pq
 
 
 {-| Get the item with the highest priority without removing it from the queue.
 Returns Nothing if the queue is empty. O(1).
 
-    head (fromList identity [ 3, 1, 4 ])
-        --> Just 1
+    head (fromList identity [ 3, 4, 1 ])
+        --> Just 4
 
     head empty
         --> Nothing
 
 -}
-head : MinPriorityQueue a -> Maybe a
-head (MinQ pq) =
+head : MaxPriorityQueue a -> Maybe a
+head (MaxQ pq) =
     PriorityQueue.head pq
 
 
 {-| Get a new queue with the highest priority item removed.
 Returns Nothing if the queue is empty. O(log n).
 
-    tail (fromList identity [ 3, 1, 4 ])
+    tail (fromList identity [ 3, 4, 1 ])
         |> Maybe.map toSortedList
-        --> Just [ 4, 3 ]
+        --> Just [ 1, 3 ]
 
     tail empty
         --> Nothing
 
 -}
-tail : MinPriorityQueue a -> Maybe (MinPriorityQueue a)
-tail (MinQ pq) =
+tail : MaxPriorityQueue a -> Maybe (MaxPriorityQueue a)
+tail (MaxQ pq) =
     PriorityQueue.tail pq
-        |> Maybe.map MinQ
+        |> Maybe.map MaxQ
 
 
 {-| Get the item with the highest priority without removing it from the queue.
@@ -307,15 +312,15 @@ Returns Nothing if the queue is empty. O(1).
 
 This is an alias for `head`.
 
-    smallest (fromList identity [ 3, 1, 4 ])
-        --> Just 1
+    largest (fromList identity [ 3, 4, 1 ])
+        --> Just 4
 
-    smallest empty
+    largest empty
         --> Nothing
 
 -}
-smallest : MinPriorityQueue a -> Maybe a
-smallest mpq =
+largest : MaxPriorityQueue a -> Maybe a
+largest mpq =
     head mpq
 
 
@@ -342,8 +347,8 @@ smallest mpq =
     all (\_ -> False) (singleton identity 1) --> False
 
 -}
-all : (a -> Bool) -> MinPriorityQueue a -> Bool
-all predicate (MinQ pq) =
+all : (a -> Bool) -> MaxPriorityQueue a -> Bool
+all predicate (MaxQ pq) =
     PriorityQueue.all predicate pq
 
 
@@ -370,8 +375,8 @@ all predicate (MinQ pq) =
     any (\_ -> False) (singleton identity 1) --> False
 
 -}
-any : (a -> Bool) -> MinPriorityQueue a -> Bool
-any predicate (MinQ pq) =
+any : (a -> Bool) -> MaxPriorityQueue a -> Bool
+any predicate (MaxQ pq) =
     PriorityQueue.any predicate pq
 
 
@@ -384,6 +389,6 @@ any predicate (MinQ pq) =
         --> 0
 
 -}
-length : MinPriorityQueue a -> Int
-length (MinQ pq) =
+length : MaxPriorityQueue a -> Int
+length (MaxQ pq) =
     PriorityQueue.length pq

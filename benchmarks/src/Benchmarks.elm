@@ -3,8 +3,8 @@ module Benchmarks exposing (main)
 import Benchmark exposing (Benchmark, describe)
 import Benchmark.Alternative exposing (rank)
 import Benchmark.Runner.Alternative as BenchmarkRunner
-import MinPriorityQueue
-import Vendor.MinPriorityQueue
+import V1_1_0.MinPriorityQueue
+import V1_1_1.MinPriorityQueue
 
 
 main : BenchmarkRunner.Program
@@ -22,27 +22,27 @@ insertMany =
     describe "Insert many"
         [ rank "Priority equals n"
             (\fn -> fn ())
-            [ ( "Current"
+            [ ( "1.1.1"
               , \() ->
-                    List.foldl (\n queue -> MinPriorityQueue.insert identity n queue) MinPriorityQueue.empty thousandItems
+                    List.foldl (\n queue -> V1_1_1.MinPriorityQueue.insert identity n queue) V1_1_1.MinPriorityQueue.empty thousandItems
                         |> always ()
               )
-            , ( "Previous"
+            , ( "1.1.0"
               , \() ->
-                    List.foldl (\n queue -> Vendor.MinPriorityQueue.insert identity n queue) Vendor.MinPriorityQueue.empty thousandItems
+                    List.foldl (\n queue -> V1_1_0.MinPriorityQueue.insert identity n queue) V1_1_0.MinPriorityQueue.empty thousandItems
                         |> always ()
               )
             ]
         , rank "Priority is always the same"
             (\fn -> fn ())
-            [ ( "Current"
+            [ ( "1.1.1"
               , \() ->
-                    List.foldl (\n queue -> MinPriorityQueue.insert always0 n queue) MinPriorityQueue.empty thousandItems
+                    List.foldl (\n queue -> V1_1_1.MinPriorityQueue.insert always0 n queue) V1_1_1.MinPriorityQueue.empty thousandItems
                         |> always ()
               )
-            , ( "Previous"
+            , ( "1.1.0"
               , \() ->
-                    List.foldl (\n queue -> Vendor.MinPriorityQueue.insert always0 n queue) Vendor.MinPriorityQueue.empty thousandItems
+                    List.foldl (\n queue -> V1_1_0.MinPriorityQueue.insert always0 n queue) V1_1_0.MinPriorityQueue.empty thousandItems
                         |> always ()
               )
             ]
@@ -54,13 +54,13 @@ toList =
     describe "toList"
         [ rank "Priority equals n"
             (\fn -> fn ())
-            [ ( "Current", \() -> MinPriorityQueue.toList queueWithDifferentPrioritiesCurrent )
-            , ( "Previous", \() -> Vendor.MinPriorityQueue.toList queueWithDifferentPrioritiesPrevious )
+            [ ( "1.1.1", \() -> V1_1_1.MinPriorityQueue.toList queueWithDifferentPrioritiesV1_1_1 )
+            , ( "1.1.0", \() -> V1_1_0.MinPriorityQueue.toList queueWithDifferentPrioritiesV1_1_0 )
             ]
         , rank "Priority is always the same"
             (\fn -> fn ())
-            [ ( "Current", \() -> MinPriorityQueue.toList queueWithSamePrioritiesCurrent )
-            , ( "Previous", \() -> Vendor.MinPriorityQueue.toList queueWithSamePrioritiesPrevious )
+            [ ( "1.1.1", \() -> V1_1_1.MinPriorityQueue.toList queueWithSamePrioritiesV1_1_1 )
+            , ( "1.1.0", \() -> V1_1_0.MinPriorityQueue.toList queueWithSamePrioritiesV1_1_0 )
             ]
         ]
 
@@ -70,35 +70,35 @@ toSortedList =
     describe "toSortedList"
         [ rank "Priority equals n"
             (\fn -> fn ())
-            [ ( "Current", \() -> MinPriorityQueue.toSortedList queueWithDifferentPrioritiesCurrent )
-            , ( "Previous", \() -> Vendor.MinPriorityQueue.toSortedList queueWithDifferentPrioritiesPrevious )
+            [ ( "1.1.1", \() -> V1_1_1.MinPriorityQueue.toSortedList queueWithDifferentPrioritiesV1_1_1 )
+            , ( "1.1.0", \() -> V1_1_0.MinPriorityQueue.toSortedList queueWithDifferentPrioritiesV1_1_0 )
             ]
         , rank "Priority is always the same"
             (\fn -> fn ())
-            [ ( "Current", \() -> MinPriorityQueue.toSortedList queueWithSamePrioritiesCurrent )
-            , ( "Previous", \() -> Vendor.MinPriorityQueue.toSortedList queueWithSamePrioritiesPrevious )
+            [ ( "1.1.1", \() -> V1_1_1.MinPriorityQueue.toSortedList queueWithSamePrioritiesV1_1_1 )
+            , ( "1.1.0", \() -> V1_1_0.MinPriorityQueue.toSortedList queueWithSamePrioritiesV1_1_0 )
             ]
         ]
 
 
-queueWithDifferentPrioritiesCurrent : MinPriorityQueue.MinPriorityQueue Int
-queueWithDifferentPrioritiesCurrent =
-    MinPriorityQueue.fromList identity thousandItems
+queueWithDifferentPrioritiesV1_1_1 : V1_1_1.MinPriorityQueue.MinPriorityQueue Int
+queueWithDifferentPrioritiesV1_1_1 =
+    V1_1_1.MinPriorityQueue.fromList identity thousandItems
 
 
-queueWithDifferentPrioritiesPrevious : Vendor.MinPriorityQueue.MinPriorityQueue Int
-queueWithDifferentPrioritiesPrevious =
-    Vendor.MinPriorityQueue.fromList identity thousandItems
+queueWithDifferentPrioritiesV1_1_0 : V1_1_0.MinPriorityQueue.MinPriorityQueue Int
+queueWithDifferentPrioritiesV1_1_0 =
+    V1_1_0.MinPriorityQueue.fromList identity thousandItems
 
 
-queueWithSamePrioritiesCurrent : MinPriorityQueue.MinPriorityQueue Int
-queueWithSamePrioritiesCurrent =
-    MinPriorityQueue.fromList always0 thousandItems
+queueWithSamePrioritiesV1_1_1 : V1_1_1.MinPriorityQueue.MinPriorityQueue Int
+queueWithSamePrioritiesV1_1_1 =
+    V1_1_1.MinPriorityQueue.fromList always0 thousandItems
 
 
-queueWithSamePrioritiesPrevious : Vendor.MinPriorityQueue.MinPriorityQueue Int
-queueWithSamePrioritiesPrevious =
-    Vendor.MinPriorityQueue.fromList always0 thousandItems
+queueWithSamePrioritiesV1_1_0 : V1_1_0.MinPriorityQueue.MinPriorityQueue Int
+queueWithSamePrioritiesV1_1_0 =
+    V1_1_0.MinPriorityQueue.fromList always0 thousandItems
 
 
 thousandItems : List Int

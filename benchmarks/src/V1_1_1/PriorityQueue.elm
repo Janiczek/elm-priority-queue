@@ -1,4 +1,4 @@
-module Vendor.PriorityQueue exposing
+module V1_1_1.PriorityQueue exposing
     ( PriorityQueue
     , empty, singleton, fromList
     , toList, toSortedList, fold
@@ -35,33 +35,33 @@ The leftist property is that the _rank_ of any left child is at least as large a
 
 -}
 type PriorityQueue a
-    = Empty
-    | Node Rank Length ( a, Priority ) (PriorityQueue a) (PriorityQueue a)
+    = Empty () () () () () ()
+    | Node Rank Length a Priority (PriorityQueue a) (PriorityQueue a)
 
 
 empty : PriorityQueue a
 empty =
-    Empty
+    Empty () () () () () ()
 
 
 singleton : (a -> Priority) -> a -> PriorityQueue a
 singleton toPriority x =
-    Node 1 1 ( x, toPriority x ) Empty Empty
+    Node 1 1 x (toPriority x) empty empty
 
 
 fromList : (a -> Priority) -> List a -> PriorityQueue a
 fromList toPriority xs =
     xs
-        |> List.foldl (insert toPriority) empty
+        |> List.foldl (\x q -> insert toPriority x q) empty
 
 
 filter : (a -> Bool) -> PriorityQueue a -> PriorityQueue a
 filter pred q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             q
 
-        Node r _ ( element, p ) a b ->
+        Node r _ element p a b ->
             if pred element then
                 let
                     filteredA : PriorityQueue a
@@ -80,7 +80,7 @@ filter pred q =
                     lengthB =
                         length filteredB
                 in
-                Node r (1 + lengthA + lengthB) ( element, p ) filteredA filteredB
+                Node r (1 + lengthA + lengthB) element p filteredA filteredB
 
             else
                 merge (filter pred a) (filter pred b)
@@ -89,10 +89,10 @@ filter pred q =
 dequeue : PriorityQueue a -> Maybe ( a, PriorityQueue a )
 dequeue q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             Just ( element, merge a b )
 
 
@@ -118,10 +118,10 @@ dequeueMany n q =
 toList : PriorityQueue a -> List a
 toList q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             []
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             element :: (toList a ++ toList b)
 
 
@@ -131,10 +131,10 @@ toSortedList q =
         go : PriorityQueue a -> List a -> List a
         go qq acc =
             case qq of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     acc
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     go (merge a b) (element :: acc)
     in
     go q []
@@ -153,30 +153,30 @@ insert toPriority x q =
 isEmpty : PriorityQueue a -> Bool
 isEmpty q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             True
 
-        Node _ _ _ _ _ ->
+        Node _ _ _ _ _ _ ->
             False
 
 
 head : PriorityQueue a -> Maybe a
 head q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
-        Node _ _ ( element, _ ) _ _ ->
+        Node _ _ element _ _ _ ->
             Just element
 
 
 tail : PriorityQueue a -> Maybe (PriorityQueue a)
 tail q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             Nothing
 
-        Node _ _ _ a b ->
+        Node _ _ _ _ a b ->
             Just <| merge a b
 
 
@@ -206,10 +206,10 @@ drop n q =
 
     else
         case q of
-            Empty ->
+            Empty _ _ _ _ _ _ ->
                 q
 
-            Node _ _ _ a b ->
+            Node _ _ _ _ a b ->
                 drop (n - 1) (merge a b)
 
 
@@ -219,10 +219,10 @@ all pred q =
         go : PriorityQueue a -> Bool
         go queue =
             case queue of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     True
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     if pred element then
                         go (merge a b)
 
@@ -238,10 +238,10 @@ any pred q =
         go : PriorityQueue a -> Bool
         go queue =
             case queue of
-                Empty ->
+                Empty _ _ _ _ _ _ ->
                     False
 
-                Node _ _ ( element, _ ) a b ->
+                Node _ _ element _ a b ->
                     if pred element then
                         True
 
@@ -254,20 +254,20 @@ any pred q =
 length : PriorityQueue a -> Int
 length q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             0
 
-        Node _ l _ _ _ ->
+        Node _ l _ _ _ _ ->
             l
 
 
 fold : (a -> b -> b) -> b -> PriorityQueue a -> b
 fold f acc q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             acc
 
-        Node _ _ ( element, _ ) a b ->
+        Node _ _ element _ a b ->
             fold f (f element acc) (merge a b)
 
 
@@ -280,41 +280,41 @@ fold f acc q =
 merge : PriorityQueue a -> PriorityQueue a -> PriorityQueue a
 merge left right =
     case ( left, right ) of
-        ( Empty, _ ) ->
+        ( Empty _ _ _ _ _ _, _ ) ->
             right
 
-        ( _, Empty ) ->
+        ( _, Empty _ _ _ _ _ _ ) ->
             left
 
-        ( Node _ _ ( x, xp ) a b, Node _ _ ( y, yp ) u v ) ->
+        ( Node _ _ x xp a b, Node _ _ y yp u v ) ->
             if xp <= yp then
-                make ( x, xp ) a (merge b right)
+                make x xp a (merge b right)
 
             else
-                make ( y, yp ) u (merge left v)
+                make y yp u (merge left v)
 
 
 {-| Create a non empty tree from an element and two sub-trees, keeping the _leftist property_ intact.
 -}
-make : ( a, Priority ) -> PriorityQueue a -> PriorityQueue a -> PriorityQueue a
-make x a b =
+make : a -> Priority -> PriorityQueue a -> PriorityQueue a -> PriorityQueue a
+make x xp a b =
     let
         len : Int
         len =
             1 + length a + length b
     in
     if rank a >= rank b then
-        Node (1 + rank b) len x a b
+        Node (1 + rank b) len x xp a b
 
     else
-        Node (1 + rank a) len x b a
+        Node (1 + rank a) len x xp b a
 
 
 rank : PriorityQueue a -> Rank
 rank q =
     case q of
-        Empty ->
+        Empty _ _ _ _ _ _ ->
             0
 
-        Node r _ _ _ _ ->
+        Node r _ _ _ _ _ ->
             r
